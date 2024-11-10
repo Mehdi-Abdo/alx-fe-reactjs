@@ -8,8 +8,23 @@ import MainContent from './components/MainContent'
 import Footer from './components/Footer'
 import UserProfile from './components/UserProfile';
 
+import React from 'react';
+import UserContext from './UserContext';
+import ProfilePage from './ProfilePage';
 
 function App() {
+    const userData = { name: "Jane Doe", email: "jane.doe@example.com" };
+
+    return (
+        <UserContext.Provider value={userData}>
+            <ProfilePage />
+        </UserContext.Provider>
+    );
+}
+
+
+
+/*function App() {
   const [count, setCount] = useState(0)
 
   return (
@@ -41,6 +56,6 @@ function App() {
       </p>
     </>
   )
-}
+}*/
 
 export default App
