@@ -1,17 +1,16 @@
-// src/components/Services.jsx
-import React from 'react';
-
+// src/Services.jsx
 function Services() {
     return (
-        <div style={{ padding: "20px" }}>
-            <h1>Our Services</h1>
-            <ul>
-                <li>Service 1</li>
-                <li>Service 2</li>
-                <li>Service 3</li>
-            </ul>
-        </div>
+      <div style={{ padding: '20px' }}>
+        <h1>Our Services</h1>
+        <ul>
+          <li>Technology Consulting</li>
+          <li>Market Analysis</li>
+          <li>Product Development</li>
+        </ul>
+      </div>
     );
-}
-
-export default Services;
+  }
+  
+  export default Services;
+  
