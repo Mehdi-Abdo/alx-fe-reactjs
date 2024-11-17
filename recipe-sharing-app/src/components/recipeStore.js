@@ -3,33 +3,51 @@ import create from 'zustand';
 
 const useRecipeStore = create((set, get) => ({
   recipes: [],
-
-  searchTerm: '', // Stores the current search term
-  filteredRecipes: [], // Stores the filtered list of recipes
+  favorites: [], // Stores IDs of favorite recipes
+  recommendations: [], // Stores recommended recipes
 
   // Add a new recipe
   addRecipe: (recipe) => {
     const updatedRecipes = [...get().recipes, { ...recipe, id: Date.now() }];
     set({ recipes: updatedRecipes });
-    get().filterRecipes(); // Recompute filtered recipes
+    get().generateRecommendations(); // Update recommendations
   },
 
-  // Update the search term
-  updateSearchTerm: (term) => {
-    set({ searchTerm: term });
-    get().filterRecipes(); // Recompute filtered recipes based on the new term
+  // Add or remove a recipe from favorites
+  toggleFavorite: (id) => {
+    const { favorites } = get();
+    const updatedFavorites = favorites.includes(id)
+      ? favorites.filter((favId) => favId !== id)
+      : [...favorites, id];
+    set({ favorites: updatedFavorites });
+    get().generateRecommendations(); // Update recommendations
   },
 
-  // Filter recipes based on the search term
-  filterRecipes: () => {
-    const { recipes, searchTerm } = get();
-    const filtered = recipes.filter((recipe) =>
-      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.ingredients.some((ingredient) =>
-        ingredient.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+  // Generate personalized recommendations
+  generateRecommendations: () => {
+    const { recipes, favorites } = get();
+    if (favorites.length === 0) {
+      set({ recommendations: recipes.slice(0, 5) }); // Default: show top 5 recipes
+      return;
+    }
+
+    // Create a recommendation system based on favorite ingredients
+    const favoriteRecipes = recipes.filter((recipe) =>
+      favorites.includes(recipe.id)
     );
-    set({ filteredRecipes: filtered });
+    const favoriteIngredients = new Set(
+      favoriteRecipes.flatMap((recipe) => recipe.ingredients)
+    );
+
+    const recommendedRecipes = recipes.filter(
+      (recipe) =>
+        !favorites.includes(recipe.id) &&
+        recipe.ingredients.some((ingredient) =>
+          favoriteIngredients.has(ingredient)
+        )
+    );
+
+    set({ recommendations: recommendedRecipes.slice(0, 5) }); // Limit to top 5
   },
 }));
 
