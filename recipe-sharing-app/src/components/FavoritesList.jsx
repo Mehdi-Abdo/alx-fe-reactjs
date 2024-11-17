@@ -1,17 +1,28 @@
 import React from 'react';
-import useRecipeStore from '../store/recipeStore';
+import useRecipeStore from './recipeStore';
 
-const FavoriteButton = ({ id }) => {
-  const favorites = useRecipeStore((state) => state.favorites);
-  const toggleFavorite = useRecipeStore((state) => state.toggleFavorite);
-
-  const isFavorite = favorites.includes(id);
+const FavoritesList = () => {
+  const favorites = useRecipeStore((state) =>
+    state.favorites.map((id) =>
+      state.recipes.find((recipe) => recipe.id === id)
+    )
+  );
 
   return (
-    <button onClick={() => toggleFavorite(id)}>
-      {isFavorite ? 'Unfavorite' : 'Favorite'}
-    </button>
+    <div>
+      <h2>My Favorites</h2>
+      {favorites.length === 0 ? (
+        <p>No favorites yet. Start adding some!</p>
+      ) : (
+        favorites.map((recipe) => (
+          <div key={recipe.id} style={{ marginBottom: '20px' }}>
+            <h3>{recipe.title}</h3>
+            <p>{recipe.description}</p>
+          </div>
+        ))
+      )}
+    </div>
   );
 };
 
-export default FavoriteButton;
+export default FavoritesList;

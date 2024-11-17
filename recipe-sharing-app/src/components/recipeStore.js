@@ -1,54 +1,60 @@
-// store/recipeStore.js
-import create from 'zustand';
+import { create } from "zustand";
 
-const useRecipeStore = create((set, get) => ({
+const useRecipeStore = create((set) => ({
   recipes: [],
-  favorites: [], // Stores IDs of favorite recipes
-  recommendations: [], // Stores recommended recipes
+  searchTerm: "",
+  filteredRecipes: [],
+  favorites: [], // User's favorite recipes (IDs)
+  recommendations: [], // Recommended recipes
 
-  // Add a new recipe
-  addRecipe: (recipe) => {
-    const updatedRecipes = [...get().recipes, { ...recipe, id: Date.now() }];
-    set({ recipes: updatedRecipes });
-    get().generateRecommendations(); // Update recommendations
-  },
+  // Action to add a recipe to favorites
+  addFavorite: (recipeId) =>
+    set((state) => ({
+      favorites: [...new Set([...state.favorites, recipeId])],
+    })),
 
-  // Add or remove a recipe from favorites
-  toggleFavorite: (id) => {
-    const { favorites } = get();
-    const updatedFavorites = favorites.includes(id)
-      ? favorites.filter((favId) => favId !== id)
-      : [...favorites, id];
-    set({ favorites: updatedFavorites });
-    get().generateRecommendations(); // Update recommendations
-  },
+  // Action to remove a recipe from favorites
+  removeFavorite: (recipeId) =>
+    set((state) => ({
+      favorites: state.favorites.filter((id) => id !== recipeId),
+    })),
 
-  // Generate personalized recommendations
-  generateRecommendations: () => {
-    const { recipes, favorites } = get();
-    if (favorites.length === 0) {
-      set({ recommendations: recipes.slice(0, 5) }); // Default: show top 5 recipes
-      return;
-    }
-
-    // Create a recommendation system based on favorite ingredients
-    const favoriteRecipes = recipes.filter((recipe) =>
-      favorites.includes(recipe.id)
-    );
-    const favoriteIngredients = new Set(
-      favoriteRecipes.flatMap((recipe) => recipe.ingredients)
-    );
-
-    const recommendedRecipes = recipes.filter(
-      (recipe) =>
-        !favorites.includes(recipe.id) &&
-        recipe.ingredients.some((ingredient) =>
-          favoriteIngredients.has(ingredient)
-        )
-    );
-
-    set({ recommendations: recommendedRecipes.slice(0, 5) }); // Limit to top 5
-  },
+  // Generate recommendations based on favorite recipes
+  generateRecommendations: () =>
+    set((state) => {
+      const recommended = state.recipes.filter(
+        (recipe) => state.favorites.includes(recipe.id) && Math.random() > 0.5
+      );
+      return { recommendations: recommended };
+    }),
+  setSearchTerm: (term) =>
+    set((state) => {
+      const lowercasedTerm = term.toLowerCase();
+      return {
+        searchTerm: term,
+        filteredRecipes: state.recipes.filter((recipe) =>
+          recipe.title.toLowerCase().includes(lowercasedTerm)
+        ),
+      };
+    }),
+  addRecipe: (newRecipe) =>
+    set((state) => ({
+      recipes: [...state.recipes, newRecipe],
+      filteredRecipes: [...state.filteredRecipes, newRecipe], // Ensure the new recipe appears in filtered results
+    })),
+  setRecipes: (recipes) => set({ recipes }),
+  // Delete a recipe by its ID
+  deleteRecipe: (id) =>
+    set((state) => ({
+      recipes: state.recipes.filter((recipe) => recipe.id !== id),
+    })),
+  // Update an existing recipe by its ID
+  updateRecipe: (id, updatedRecipe) =>
+    set((state) => ({
+      recipes: state.recipes.map((recipe) =>
+        recipe.id === id ? { ...recipe, ...updatedRecipe } : recipe
+      ),
+    })),
 }));
 
 export default useRecipeStore;
